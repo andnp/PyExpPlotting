@@ -24,7 +24,7 @@ NEW_TAG="$VNUM1.$VNUM2"
 
 echo "Updating $VERSION to $NEW_TAG"
 
-git checkout master
+git checkout main
 
 # get current hash and see if it already has a tag
 GIT_COMMIT=`git rev-parse HEAD`
