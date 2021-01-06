@@ -10,7 +10,7 @@ setup(
         "matplotlib>=2.2.3",
         "PyExpUtils @ git+ssh://git@github.com/andnp/PyExpUtils@2.4",
     ],
-    version=0.2,
+    version=0.3,
     license='MIT',
     description='A few plotting utilities to go with PyExpUtils',
     long_description='todo',
