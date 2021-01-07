@@ -32,11 +32,18 @@ AAAI_Dimensions = PaperDimensions(
     text_width = 7.0,
 )
 
+JMLR_Dimensions = PaperDimensions(
+    columns = 1,
+    column_width = 6.0,
+    text_width = 6.0,
+)
+
 def getDefaultDimensions(venue: str):
     venue = venue.lower()
 
     if venue == 'icml': return ICML_Dimensions
     if venue == 'neurips': return NeurIPS_Dimensions
     if venue == 'aaai': return AAAI_Dimensions
+    if venue == 'jmlr': return JMLR_Dimensions
 
     raise NotImplementedError(f"Sorry, don't know this conference: {venue}")
