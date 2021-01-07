@@ -28,6 +28,9 @@ if __name__ == '__main__':
 
         results = loadResults(exp, 'returns.csv')
 
-        plotBest(results, ax)
+        plotBest(results, ax, {
+            'y_label': 'return',
+            'x_label': 'steps',
+        })
 
     save('tests/', 'test', height_ratio=0.75)

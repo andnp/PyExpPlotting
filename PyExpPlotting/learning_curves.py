@@ -22,8 +22,10 @@ def buildOptions(options: Optional[Dict[str, Any]]):
     out_options['color'] = options.get('color')
     out_options['ci_mult'] = options.get('ci_mult', 1.0)
     out_options['label'] = options.get('label')
-    out_options['width'] = options.get('width', 1.25)
+    out_options['width'] = options.get('width', 0.75)
     out_options['legend'] = options.get('legend', True)
+    out_options['x_label'] = options.get('x_label')
+    out_options['y_label'] = options.get('y_label')
 
     return out_options
 
@@ -42,6 +44,12 @@ def lineplot(ax, mean, stderr: Optional[np.ndarray] = None, options: Optional[Di
 
     if o['legend']:
         ax.legend(frameon=False)
+
+    if o['x_label']:
+        ax.set_xlabel(o['x_label'])
+
+    if o['y_label']:
+        ax.set_ylabel(o['y_label'])
 
 def plot(result: DuckResult, ax, options: Optional[Dict[str, Any]] = None):
     if options is None: options = {}

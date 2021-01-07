@@ -22,6 +22,8 @@ def buildOptions(options: Optional[Dict[str, Any]]):
     out_options['kde'] = options.get('kde', True)
     out_options['hist'] = options.get('hist', True)
     out_options['dist_height'] = options.get('dist_height', 0.9)
+    out_options['y_ticks'] = options.get('y_ticks', True)
+    out_options['process_y_ticks'] = options.get('process_y_ticks', lambda x: x)
 
     return out_options
 
@@ -82,9 +84,10 @@ def stacked(result_dict: Dict[Any, DuckResult], ax, reducer: Callable[[np.ndarra
         y_offset += o['spacing']
 
     empty_ticks = all([tick.get_text() == '' for tick in ax.get_yticklabels()])
-    if empty_ticks:
+    if empty_ticks and o['y_ticks']:
         y_labels = list(result_dict)
         ax.yaxis.set_ticks(y_ticks)
+        y_labels = list(map(o['process_y_ticks'], y_labels))
         ax.set_yticklabels(y_labels)
 
 def stackedAlgs(result_dicts: List[Dict[Any, DuckResult]], ax, reducer: Callable[[np.ndarray], float], options: Optional[Dict[str, Any]] = None):
@@ -103,8 +106,10 @@ def stackedAlgs(result_dicts: List[Dict[Any, DuckResult]], ax, reducer: Callable
 
     o['x_range'] = (lo, hi)
     y_offset = 0
-    for alg_dict in result_dicts:
+    center_alg = int(len(result_dicts) // 2)
+    for idx, alg_dict in enumerate(result_dicts):
         o['y_offset'] = y_offset
+        o['y_ticks'] = idx == center_alg
 
         key = list(alg_dict)[0]
 

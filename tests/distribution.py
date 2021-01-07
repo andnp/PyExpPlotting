@@ -42,6 +42,7 @@ if __name__ == '__main__':
         'prefer': 'big',
         'alg_spacing': 0.25,
         'hist': False,
+        'process_y_ticks': np.log2,
     })
 
     save('tests/', 'test', height_ratio=2.0)
