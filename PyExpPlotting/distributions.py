@@ -30,6 +30,15 @@ def buildOptions(options: Optional[Dict[str, Any]]):
 def minMaxScale(x):
     return (x - np.min(x)) / (np.max(x) - np.min(x))
 
+def pullLeft(x, p):
+    if x < 0:
+        return (1 + p) * x
+
+    return (1 - p) * x
+
+def pullRight(x, p):
+    return -pullLeft(-x, p)
+
 def plot(result: DuckResult, ax, reducer: Callable[[np.ndarray], float], options: Optional[Dict[str, Any]] = None):
     o =  buildOptions(options)
 
@@ -46,8 +55,8 @@ def plot(result: DuckResult, ax, reducer: Callable[[np.ndarray], float], options
     else:
         lo, hi = o['x_range']
 
-    lo = 0.95 * lo
-    hi = 1.05 * hi
+    lo = pullLeft(lo, 0.02)
+    hi = pullRight(hi, 0.02)
 
     if o['hist']:
         bins = o['bins']
