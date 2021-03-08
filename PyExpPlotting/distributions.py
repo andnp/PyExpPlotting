@@ -3,7 +3,14 @@ from typing import Any, Callable, Dict, List, Optional
 from PyExpUtils.results.backends.backend import DuckResult, ResultList
 from PyExpUtils.results.results import splitOverParameter, getBest
 from scipy.stats.kde import gaussian_kde
+import PyExpUtils.utils.dict as DictUtils
 
+# TODO: split this into 2 dictionaries. One that contains user-specified options
+# and another that contains context information (e.g. best params for an algorithm)
+# also, when we make the split, organize the options into a meaningful order somehow
+
+# TODO: see if we can use python 3.8+ and use typed-dicts instead, that way we can
+# start type-checking this library
 def buildOptions(options: Optional[Dict[str, Any]]):
     options = options if options is not None else {}
     out_options = {}
@@ -24,6 +31,11 @@ def buildOptions(options: Optional[Dict[str, Any]]):
     out_options['dist_height'] = options.get('dist_height', 0.9)
     out_options['y_ticks'] = options.get('y_ticks', True)
     out_options['process_y_ticks'] = options.get('process_y_ticks', lambda x: x)
+    out_options['highlight_top'] = options.get('highlight_top', False)
+    out_options['highlight_level'] = options.get('highlight_level', 0.2)
+    out_options['highlight'] = options.get('highlight', True)
+    out_options['best_params'] = options.get('best_params')  # <-- actually a context variable
+    out_options['best_param'] = options.get('best_param')  # <-- also context, and worse only useful for some of the funcs but not all
 
     return out_options
 
@@ -40,7 +52,7 @@ def pullRight(x, p):
     return -pullLeft(-x, p)
 
 def plot(result: DuckResult, ax, reducer: Callable[[np.ndarray], float], options: Optional[Dict[str, Any]] = None):
-    o =  buildOptions(options)
+    o = buildOptions(options)
 
     if not o['hist'] and not o['kde']:
         raise Exception("Well if you don't want a histogram or kde, then what *do* you want??")
@@ -58,23 +70,27 @@ def plot(result: DuckResult, ax, reducer: Callable[[np.ndarray], float], options
     lo = pullLeft(lo, 0.02)
     hi = pullRight(hi, 0.02)
 
+    alpha = 1
+    if not o['highlight']:
+        alpha = o['highlight_level']
+
     if o['hist']:
         bins = o['bins']
         hist, _ = np.histogram(points, bins=bins, range=(lo, hi))
         hist = minMaxScale(hist) * o['dist_height']
         hist_x = np.linspace(lo, hi, bins)
 
-        ax.bar(hist_x, hist, bottom=o['y_offset'], width=(hi - lo) / bins, color=o['color'], alpha=o['alpha'])
+        ax.bar(hist_x, hist, bottom=o['y_offset'], width=(hi - lo) / bins, color=o['color'], alpha=o['alpha'] * alpha)
 
     if o['kde']:
         kde = gaussian_kde(points)
         dist_space = np.linspace(lo, hi, o['fidelity'])
         dist = minMaxScale(kde(dist_space)) * o['dist_height'] + o['y_offset']
-        ax.plot(dist_space, dist, linewidth=1.0, color=o['color'])
+        ax.plot(dist_space, dist, linewidth=1.0, color=o['color'], alpha=alpha)
 
         # if we only want a KDE, then shade in the region under the curve
         if not o['hist']:
-            ax.fill_between(dist_space, np.zeros(o['fidelity']) + o['y_offset'], dist, color=o['color'], alpha=0.2)
+            ax.fill_between(dist_space, np.zeros(o['fidelity']) + o['y_offset'], dist, color=o['color'], alpha=0.2 * alpha)
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -87,6 +103,12 @@ def stacked(result_dict: Dict[Any, DuckResult], ax, reducer: Callable[[np.ndarra
     y_offset = o['y_offset']
     for key in result_dict:
         o['y_offset'] = y_offset
+
+        if o['highlight_top'] and o['best_param'] == key:
+            o['highlight'] = True
+        elif o['highlight_top']:
+            o['highlight'] = False
+
         plot(result_dict[key], ax, reducer, o)
 
         y_ticks.append(y_offset)
@@ -126,6 +148,9 @@ def stackedAlgs(result_dicts: List[Dict[Any, DuckResult]], ax, reducer: Callable
             alg = alg_dict[key].exp.agent
             o['color'] = o['colors'].get(alg)
 
+        if o['best_params']:
+            o['best_param'] = o['best_params'][idx]
+
         stacked(alg_dict, ax, reducer, o)
 
         y_offset += o['alg_spacing']
@@ -143,7 +168,12 @@ def parameterStudyAlgs(
     o['spacing'] = len(results) * o['alg_spacing'] + o['spacing']
 
     alg_dicts = []
+    best_params = []
     for alg_results in results:
+        alg_results = list(alg_results)
+        total_best = getBest(alg_results, prefer=o['prefer'])
+        best_params.append(DictUtils.get(total_best.params, param))
+
         param_dict = splitOverParameter(alg_results, param)
 
         result_dict = {}
@@ -152,4 +182,5 @@ def parameterStudyAlgs(
 
         alg_dicts.append(result_dict)
 
+    o['best_params'] = best_params
     stackedAlgs(alg_dicts, ax, reducer, o)

@@ -41,8 +41,9 @@ if __name__ == '__main__':
         'colors': colors,
         'prefer': 'big',
         'alg_spacing': 0.25,
-        'hist': False,
+        'hist': True,
         'process_y_ticks': np.log2,
+        'highlight_top': True,
     })
 
     save('tests/', 'test', height_ratio=2.0)
