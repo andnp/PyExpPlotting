@@ -9,7 +9,7 @@ setup(
     install_requires=[
         "scipy>=1.5.4",
         "matplotlib>=3.3.0",
-        "PyExpUtils @ git+ssh://git@github.com/andnp/PyExpUtils@2.4",
+        "PyExpUtils>=2.4",
     ],
     version=0.7,
     license='MIT',
