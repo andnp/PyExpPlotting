@@ -2,4 +2,4 @@ matplotlib>=2.2.3
 mypy>=0.770
 numba>=0.52.0
 scipy>=1.5.4
-git+https://github.com/andnp/PyExpUtils@2.4#egg=PyExpUtils
+git+https://github.com/andnp/PyExpUtils@2.7#egg=PyExpUtils
