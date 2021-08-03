@@ -39,6 +39,9 @@ def findExperiments(key: Optional[str] = None, path: Optional[str] = None):
             if not wrapped:
                 continue
 
+            if fpart.endswith('.json'):
+                fpart = fpart.replace('.json', '')
+
             if out_key == '':
                 out_key = fpart
 
