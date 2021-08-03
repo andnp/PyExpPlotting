@@ -11,7 +11,7 @@ setup(
         "matplotlib>=3.3.0",
         "PyExpUtils>=2.4",
     ],
-    version=0.7,
+    version=0.8,
     license='MIT',
     description='A few plotting utilities to go with PyExpUtils',
     long_description='todo',
