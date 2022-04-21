@@ -15,27 +15,27 @@ class PaperDimensions:
 
 
 ICML_Dimensions = PaperDimensions(
-    columns = 2,
-    column_width = 3.25,
-    text_width = 6.75,
+    columns=2,
+    column_width=3.25,
+    text_width=6.75,
 )
 
 NeurIPS_Dimensions = PaperDimensions(
-    columns = 1,
-    column_width = 5.5,
-    text_width = 5.5,
+    columns=1,
+    column_width=5.5,
+    text_width=5.5,
 )
 
 AAAI_Dimensions = PaperDimensions(
-    columns = 2,
-    column_width = 3.3125, # TODO: confirm if this is correct
-    text_width = 7.0,
+    columns=2,
+    column_width=3.3125, # TODO: confirm if this is correct
+    text_width=7.0,
 )
 
 JMLR_Dimensions = PaperDimensions(
-    columns = 1,
-    column_width = 6.0,
-    text_width = 6.0,
+    columns=1,
+    column_width=6.0,
+    text_width=6.0,
 )
 
 def getDefaultDimensions(venue: str):
