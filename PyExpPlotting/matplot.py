@@ -1,6 +1,7 @@
 from typing import Optional, Union
 import os
 import importlib
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from PyExpPlotting.defaults import ICML_Dimensions, PaperDimensions, getDefaultDimensions
 
@@ -39,7 +40,7 @@ def save(
         save_type: str = 'png',
         width: float = 1.0,
         height_ratio: float = 1.0,
-        f: Optional[plt.Figure] = None,
+        f: Optional[Figure] = None,
     ):
 
     # don't make this a default because it could be changed
@@ -55,6 +56,7 @@ def save(
     # too much logic to stick in default parameters
     if plot_type is None:
         main_file = importlib.import_module('__main__').__file__
+        assert main_file is not None
         plot_type = os.path.basename(main_file).replace('.py', '').replace('_', '-')
 
     save_path = f'{save_path}/{plot_type}'
