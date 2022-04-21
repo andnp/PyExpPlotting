@@ -3,6 +3,8 @@ results
 results.broken
 results.tar*
 .tmp/
+.token
+PyExpPlotting_andnp*
 
 # ignore python caches
 env/
