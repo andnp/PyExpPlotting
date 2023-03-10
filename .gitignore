@@ -10,6 +10,8 @@ PyExpPlotting_andnp*
 env/
 __pycache__
 *.pyc
+.venv/
+.pdm.toml
 
 # ignore test experiments
 test.json
