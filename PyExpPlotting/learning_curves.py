@@ -1,77 +1,87 @@
 import numpy as np
-from typing import Any, Dict, Optional
-from PyExpUtils.results.backends.backend import ResultList, DuckResult
-from PyExpUtils.results.results import getBest
+from dataclasses import dataclass
+from matplotlib.axes import Axes
 
-def confidenceInterval(mean, stderr, mult):
-    return (mean - mult * stderr, mean + mult * stderr)
+from PyExpPlotting.colors import ColorPalette
 
-def buildOptions(options: Optional[Dict[str, Any]]):
-    options = options if options is not None else {}
-    out_options = {}
+@dataclass
+class LineplotOptions:
+    label: str | None = None
+    color: ColorPalette = ColorPalette()
 
-    if options.get('dashed'):
-        out_options['style'] = '--'
-    elif options.get('dotted'):
-        out_options['style'] = ':'
-    else:
-        out_options['style'] = None
+    linewidth: float = 0.25
+    alpha: float = 0.2
 
-    out_options['alpha_main'] = options.get('alpha_main', 1.0)
-    out_options['alpha'] = options.get('alpha', 0.4) * out_options['alpha_main']
-    out_options['color'] = options.get('color')
-    out_options['ci_mult'] = options.get('ci_mult', 1.0)
-    out_options['label'] = options.get('label')
-    out_options['width'] = options.get('width', 0.75)
-    out_options['legend'] = options.get('legend', True)
-    out_options['x_label'] = options.get('x_label')
-    out_options['y_label'] = options.get('y_label')
+    legend: bool = True
+    x_label: str | None = None
+    y_label: str | None = None
+    title: str | None = None
 
-    return out_options
+def plotLearningCurve(data: np.ndarray, ax: Axes, lo: np.ndarray | None = None, hi: np.ndarray | None = None, options: LineplotOptions = LineplotOptions()):
+    color = options.color.get(options.label)
+    ax.plot(data, label=options.label, color=color, linewidth=options.linewidth)
 
-def lineplot(ax, mean, stderr: Optional[np.ndarray] = None, options: Optional[Dict[str, Any]] = None):
-    o = buildOptions(options)
+    if lo is not None and hi is not None:
+        ax.fill_between(range(data.shape[0]), lo, hi, color=color, alpha=options.alpha)
 
-    p, = ax.plot(mean, label=o['label'], linestyle=o['style'], color=o['color'], alpha=o['alpha_main'], linewidth=o['width'])
-
-    color = p.get_color()
-    if stderr is not None:
-        (lo, hi) = confidenceInterval(mean, stderr, o['ci_mult'])
-        ax.fill_between(range(len(mean)), lo, hi, color=color, alpha=o['alpha'])
-
+    # TODO: make this a shared method
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    if o['legend']:
+    if options.legend:
         ax.legend(frameon=False)
 
-    if o['x_label']:
-        ax.set_xlabel(o['x_label'])
+    if options.x_label is not None:
+        ax.set_xlabel(options.x_label)
 
-    if o['y_label']:
-        ax.set_ylabel(o['y_label'])
+    if options.y_label is not None:
+        ax.set_ylabel(options.y_label)
 
-def plot(result: DuckResult, ax, options: Optional[Dict[str, Any]] = None):
-    if options is None: options = {}
+    if options.title is not None:
+        ax.set_title(options.title)
 
-    label = options.get('label')
+@dataclass
+class AllLinesPlotOptions(LineplotOptions):
+    summary: str | None = 'mean'
+    max_lines: int = 30
 
-    # if we don't have a label and that's because it wasn't specified
-    # then default to the agent's name
-    if not label and 'label' not in options:
-        label = result.exp.agent
-        options['label'] = label
+def plotAllLearningCurves(data: np.ndarray, ax: Axes, options: AllLinesPlotOptions = AllLinesPlotOptions()):
+    color = options.color.get(options.label)
 
-    # call through to the result's mean/stderr functions
-    mean = result.mean()
-    stderr = result.stderr()
+    assert data.ndim == 2
+    idxs = np.arange(data.shape[0])
+    if options.max_lines < data.shape[0]:
+        top = int(options.max_lines / 2)
+        bottom = options.max_lines - top
 
-    return lineplot(ax, mean, stderr, options)
+        scores = np.mean(data, axis=1)
+        sorted_idxs = np.argsort(scores)
+        bottom_idxs = sorted_idxs[:bottom]
+        top_idxs = sorted_idxs[-top:]
 
-def plotBest(results: ResultList, ax, options: Optional[Dict[str, Any]] = None):
-    if options is None: options = {}
+        idxs = np.concatenate((bottom_idxs, top_idxs))
 
-    prefer = options.get('prefer', 'big')
-    best = getBest(results, prefer=prefer)
+    label = options.label
+    for idx in idxs:
+        ax.plot(data[idx], label=label, color=color, linewidth=options.linewidth, alpha=options.alpha)
+        label = None
 
-    return plot(best, ax, options)
+    if options.summary == 'mean':
+        mean = np.mean(data, axis=0)
+        ax.plot(mean, color=color, linewidth=options.linewidth)
+
+    # TODO: make this a shared method
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    if options.legend:
+        ax.legend(frameon=False)
+
+    if options.x_label is not None:
+        ax.set_xlabel(options.x_label)
+
+    if options.y_label is not None:
+        ax.set_ylabel(options.y_label)
+
+    if options.title is not None:
+        ax.set_title(options.title)
