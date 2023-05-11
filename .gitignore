@@ -11,7 +11,7 @@ env/
 __pycache__
 *.pyc
 .venv/
-.pdm.toml
+.pdm-python
 
 # ignore test experiments
 test.json
