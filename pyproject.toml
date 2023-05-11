@@ -23,7 +23,7 @@ dev = [
 
 [project]
 name = "PyExpPlotting-andnp"
-version = "0.8.0"
+version = "1.0.0"
 description = ""
 authors = [
     {name = "Andy Patterson", email = "andnpatterson@gmail.com"},
