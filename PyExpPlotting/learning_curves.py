@@ -7,7 +7,7 @@ from PyExpPlotting.colors import ColorPalette
 @dataclass
 class LineplotOptions:
     label: str | None = None
-    color: ColorPalette = ColorPalette()
+    color: ColorPalette | str = ColorPalette()
 
     linewidth: float = 0.25
     alpha: float = 0.2
@@ -17,12 +17,12 @@ class LineplotOptions:
     y_label: str | None = None
     title: str | None = None
 
-def plotLearningCurve(data: np.ndarray, ax: Axes, lo: np.ndarray | None = None, hi: np.ndarray | None = None, options: LineplotOptions = LineplotOptions()):
-    color = options.color.get(options.label)
-    ax.plot(data, label=options.label, color=color, linewidth=options.linewidth)
+def plotLearningCurve(x: np.ndarray, y: np.ndarray, ax: Axes, lo: np.ndarray | None = None, hi: np.ndarray | None = None, options: LineplotOptions = LineplotOptions()):
+    color = options.color.get(options.label) if isinstance(options.color, ColorPalette) else options.color
+    ax.plot(x, y, label=options.label, color=color, linewidth=options.linewidth)
 
     if lo is not None and hi is not None:
-        ax.fill_between(range(data.shape[0]), lo, hi, color=color, alpha=options.alpha)
+        ax.fill_between(x, lo, hi, color=color, alpha=options.alpha)
 
     # TODO: make this a shared method
     ax.spines['top'].set_visible(False)

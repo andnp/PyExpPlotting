@@ -65,4 +65,4 @@ def save(
     width = width * dims.column_width
     height = width * height_ratio
     f.set_size_inches((width, height), forward=True)
-    f.savefig(f'{save_path}/{plot_name}.{save_type}', dpi=600, bbox_inches='tight')
+    f.savefig(f'{save_path}/{plot_name}.{save_type}', dpi=1200, bbox_inches='tight')

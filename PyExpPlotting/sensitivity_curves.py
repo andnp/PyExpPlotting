@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, Sequence, Tuple
 from PyExpUtils.results.tools import subsetDF, splitByValue
 from PyExpPlotting.colors import ColorPalette
 from PyExpPlotting.tools import reduceCurve, CurveReducer, getBest
@@ -11,7 +11,7 @@ from PyExpPlotting.tools import reduceCurve, CurveReducer, getBest
 # could set up an inheritance system
 @dataclass
 class SensitivityOptions:
-    hypers: List[str] | None = None
+    hypers: Sequence[str] | None = None
     style: str = 'solid'
     color: ColorPalette = ColorPalette()
     label: str | None = None
@@ -22,6 +22,7 @@ class SensitivityOptions:
     log_x: int | None = None
     x_label: str | None = None
     y_label: str | None = None
+    title: str | None = None
 
     prefer: str = 'big'
     curve_reducer: str | CurveReducer = 'auc'
@@ -61,7 +62,7 @@ def bestPerformanceEach(df: pd.DataFrame, param: str, metric: str, options: Sens
 
     return out
 
-def plotSensitivityCurve(df: pd.DataFrame, ax: Axes, param: str, metric: str, options: SensitivityOptions):
+def plot_sensitivity(df: pd.DataFrame, ax: Axes, param: str, metric: str, options: SensitivityOptions):
     if options.param_reducer == 'slice':
         parts = sliceBestPerformance(df, param, metric, options)
 
@@ -71,19 +72,34 @@ def plotSensitivityCurve(df: pd.DataFrame, ax: Axes, param: str, metric: str, op
     else:
         raise Exception('Unknown parameter reduction strategy')
 
-    x = np.asarray(parts.keys())
-    y = np.asarray(parts.values())
+    return plotSensitivityCurve(parts, ax, param=param, options=options)
+
+def plotSensitivityCurve(parts: Dict[Any, float], ax: Axes, cis: Dict[Any, Tuple[float, float]] | None = None, param: str = '', options: SensitivityOptions = SensitivityOptions()):
+    x = np.asarray(list(parts.keys()))
+    y = np.asarray(list(parts.values()))
 
     idxs = np.argsort(x)
     x = x[idxs]
     y = y[idxs]
 
+    ci = None
+    if cis is not None:
+        x_ci = np.asarray(list(cis.keys()))
+        y_ci = np.asarray(list(cis.values()))
+
+        idxs = np.argsort(x_ci)
+        ci = y_ci[idxs]
+
+    color = options.color.get(options.label)
     ax.plot(
         x, y,
         label=options.label,
-        color=options.color.get(options.label),
+        color=color,
         linewidth=options.linewidth,
     )
+
+    if ci is not None:
+        ax.fill_between(x, ci[:, 0], ci[:, 1], color=color, alpha=0.2)
 
     # TODO: make this a shared method
     ax.spines['top'].set_visible(False)
@@ -105,3 +121,9 @@ def plotSensitivityCurve(df: pd.DataFrame, ax: Axes, param: str, metric: str, op
 
     elif options.x_label:
         ax.set_xlabel(options.x_label)
+
+    if options.y_label:
+        ax.set_ylabel(options.y_label)
+
+    if options.title is not None:
+        ax.set_title(options.title)
